@@ -1,0 +1,6 @@
+beautifulsoup4
+bs4
+Flask
+psycopg2
+pymorphy2
+selenium

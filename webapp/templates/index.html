@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+
+{% block content%}
+{{ super() }}
+<form action="/choose" method="post" class="form-price">
+    <p><label>Введите название рецепта</label>
+        <input type="text" name="request_name" value="" required />
+        <input type="submit" value="потвердить" required/>
+    </p>
+</form>
+{% endblock %}

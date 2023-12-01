@@ -1,0 +1,37 @@
+version: '3.7'
+
+services:  
+  flask_web:
+    restart: always
+    build: ./webapp
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+    links:
+      - postgres:postgres
+    networks:
+      - default
+  
+  postgres:
+    image: postgres
+    container_name: postgres
+    expose:
+       - "5432"
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=2328
+      - POSTGRES_HOST_AUTH_METHOD=trust
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432    
+    volumes:
+       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - default
+
+networks:
+  default:
+
+volumes:
+  postgres_data:
