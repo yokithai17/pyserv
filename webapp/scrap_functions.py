@@ -1,11 +1,19 @@
 from bs4 import BeautifulSoup
 from selenium import webdriver
+import chromedriver_binary 
 import re
 import pymorphy2
 
 # options driver
-options = webdriver.FirefoxOptions()
-# options.add_argument('--headless')
+chrome_options = webdriver.ChromeOptions()
+chrome_options.add_argument("--headless")
+chrome_options.add_argument("--disable-gpu")
+chrome_options.add_argument("--no-sandbox")
+chrome_options.add_argument('--disable-dev-shm-usage')
+chrome_options.add_argument('--ignore-certificate-errors')
+chrome_options.add_argument('--ignore-ssl-errors')
+
+
 
 # site
 recipe_site = 'https://www.gastronom.ru'
@@ -14,6 +22,7 @@ recipe_site_search = 'https://www.gastronom.ru/search/type/recipe?t={}'
 items_site_search = 'https://online.metro-cc.ru/search?q={}'
 
 # regex
+regex_1 = r'\d{1,2}–\d{1,2}%'
 regex = (
     r'больш[а-я][а-я]|средн[а-я][а-я]|зубчик[а-я][*]'
     r'|сваренн[а-я]+|л\.|\d|'
@@ -25,10 +34,10 @@ regex = (
 morph = pymorphy2.MorphAnalyzer()
 
 
-def get_bsObj(url: str, time=10):
-    driver = webdriver.Firefox(options=options)
+def get_bsObj(url: str):
+    driver = webdriver.Chrome(options=chrome_options)
+    driver.implicitly_wait(10)
     driver.get(url)
-    # driver.implicitly_wait(1)
     html = driver.execute_script("return document.body.innerHTML")
     driver.quit()
     return BeautifulSoup(html, 'html.parser')
@@ -71,10 +80,8 @@ def get_recipies_by_url(url: str):
 def get_price_of_ingredient(ingredient: str) -> tuple[int, str]:
     bsObj = get_bsObj(items_site_search.format(ingredient))
     print("[INFO] get html from items_site")
-    helper = 'catalog-2-level-product-card product-card page-search__products-item with-rating with-prices-drop'
-    found_goods = bsObj.find_all('div', {'class': helper})
-
-    min_price = 1e10
+    found_goods = bsObj.find_all('div', {'class': 'product-card__content'})
+    min_price = 12345678
     min_title = ''
 
     for good in found_goods:
@@ -84,10 +91,11 @@ def get_price_of_ingredient(ingredient: str) -> tuple[int, str]:
             title = title.text.strip()
         if price:
             price = price.text.replace('\xa0', '')
-            if int(price) < min_price:
-                min_title = title
+            if min_price > int(price):
                 min_price = int(price)
-
+                min_title = title
+        # print(title, price)
+    print(f"[INFO] {ingredient} --->", (min_price, min_title))
     return (min_price, min_title)
 
 
@@ -97,10 +105,13 @@ def make_readable(recipe: list[str]):
         stripped = recipe[i].split(',', 1)[0]
         pattern = re.compile(r'\([^(]+\)')
         result = pattern.sub('', stripped)
+        result = re.sub(regex_1, '', result)
+        result = re.sub(r'\d+', '', result)
         result = re.sub(regex, '', result)
-        result = " ".join(result.split())
+        result = re.sub(r'\b[а-яА-Я]\b', '', result)
+        result = "%20".join(result.split())        
         readable.append(result)
-
+    
     return readable
 
 

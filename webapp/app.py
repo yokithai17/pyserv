@@ -105,7 +105,7 @@ def choose():
                 print("[INFO] update price of recipe")
                 price = 0
                 ingredients = functions.get_recipies_by_url(recipe[0])
-                functions.make_readable(ingredients)
+                ingredients = functions.make_readable(ingredients)
                 for ingredient in ingredients:
                     price += functions.get_price_of_ingredient(ingredient)[0]
                 update_price(recipe_name, price)
@@ -119,8 +119,7 @@ def choose():
         request_name = functions.standardize(request_name)
         print(f"[INFO] standard turned into: {request_name}")
         items = []
-        # request_id = get_request_id(request_name)
-        request_id = None
+        request_id = get_request_id(request_name)
         if request_id is None:
             request_id = insert_request_recipe(request_name)
             items = functions.get_recipe_by_request(request_name)

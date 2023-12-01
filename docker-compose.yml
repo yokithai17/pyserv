@@ -29,6 +29,14 @@ services:
        - postgres_data:/var/lib/postgresql/data
     networks:
       - default
+  pgadmin4:
+    container_name: pgadmin4
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: noemail@noemail.com
+      PGADMIN_DEFAULT_PASSWORD: root
+    ports:
+      - "5000:80"
 
 networks:
   default:
