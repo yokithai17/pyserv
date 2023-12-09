@@ -16,12 +16,13 @@ CREATE_REQUESTWORDS_TABLE = (
 )
 
 CREATE_RECIPE_TABLE = """ CREATE TABLE IF NOT EXISTS recipe(request_id INTEGER, recipe_name TEXT, price REAL, 
-                            url TEXT, FOREIGN KEY(request_id) REFERENCES requestWords(id) ON DELETE CASCADE);"""
+                            url TEXT, ingredients TEXT[],
+                            FOREIGN KEY(request_id) REFERENCES requestWords(id) ON DELETE CASCADE);"""
 
 INSERT_REQUESTWORD_RETURN_ID = "INSERT INTO requestWords (request) VALUES (%s) RETURNING id;"
 
 INSERT_RECIPE = (
-    "INSERT INTO recipe(request_id, recipe_name, price, url) VALUES (%s, %s, %s, %s);"
+    "INSERT INTO recipe(request_id, recipe_name, price, url, ingredients) VALUES (%s, %s, %s, %s, %s);"
 )
 
 SELECT_ID_FROM_REQUESTWORDS = (
@@ -33,11 +34,11 @@ SELECT_LIST_FROM_RECIPE_ID = (
 )
 
 SELECT_LIST_FROM_RECIPE_NAME = (
-    "SELECT url, price FROM recipe WHERE recipe_name = (%s)"
+    "SELECT url, price, ingredients FROM recipe WHERE recipe_name = (%s)"
 )
 
 UPDATE_PRICE = (
-    "UPDATE recipe SET price = (%s) WHERE recipe_name = (%s)"
+    "UPDATE recipe SET price = (%s), ingredients = (%s) WHERE recipe_name = (%s)"
 )
 
 
@@ -69,13 +70,13 @@ def insert_request_recipe(recipe_name: str):
 def insert_recipies(recipe_id: int, items: list):
     with connection.cursor() as cursor:
         for item in items:
-            cursor.execute(INSERT_RECIPE, (recipe_id, item[1], -1, item[0]))
+            cursor.execute(INSERT_RECIPE, (recipe_id, item[1], -1, item[0], []))
         return
 
 
-def update_price(recipe_name: str, price: int):
+def update_price(recipe_name: str, price: int, ingredients: list):
     with connection.cursor() as cursor:
-        cursor.execute(UPDATE_PRICE, (price, recipe_name))
+        cursor.execute(UPDATE_PRICE, (price, ingredients, recipe_name))
         return
 
 
@@ -92,52 +93,67 @@ def index():
 @app.route('/choose', methods=["POST"])
 def choose():
     if request.method == 'POST':
-        print(request.form)
         print("[INFO] GET A POST METHOD")
+        print(request.form)
+
         recipe_name = request.form.get('recipe_name')
         if recipe_name:
-            print("[INFO] GET recipe_name")
-            recipe = get_recipe(recipe_name)
-            if recipe is None:
-                print("[INFO] wrong recipe_name")
-                return redirect(url_for('suka_blyad', recipe_name="Wrong name", price=-1))
-            elif recipe[1] == -1:
-                print("[INFO] update price of recipe")
-                price = 0
-                ingredients = functions.get_recipies_by_url(recipe[0])
-                ingredients = functions.make_readable(ingredients)
-                for ingredient in ingredients:
-                    price += functions.get_price_of_ingredient(ingredient)[0]
-                update_price(recipe_name, price)
-                print(f'[INFO] price fo {recipe_name} updated')
-            else:
-                price = recipe[1]
-                print('[INFO] get price from table')
-            return redirect(url_for('suka_blyad', recipe_name=recipe_name, price=price))
+            return price(recipe_name)
+            
         request_name = request.form['request_name']
         print(f"[INFO] get a request_name: {request_name}")
         request_name = functions.standardize(request_name)
         print(f"[INFO] standard turned into: {request_name}")
+
         items = []
         request_id = get_request_id(request_name)
+
         if request_id is None:
             request_id = insert_request_recipe(request_name)
             items = functions.get_recipe_by_request(request_name)
-            if items:
-                print('[INFO] insert recipies into table')
-                insert_recipies(request_id, items)
-            else:
+            if items is None:
                 print('[INFO] 0 found recipies')
                 return redirect(url_for('404.html'))
+            
+            print('[INFO] insert recipies into table')
+            insert_recipies(request_id, items)
+
         else:
             print("[INFO] get content from tables to /choose.html")
             items = get_recipies(request_id)
+
         return render_template('choose.html', items=list(enumerate(items)))
 
 
-@app.route('/choose/<recipe_name>/<price>', methods=["GET"])
-def suka_blyad(recipe_name, price):
-    return render_template('item.html', recipe_name=recipe_name, price=price)
+@app.route('/choose/<recipe_name>')
+def price(recipe_name):
+    print("[INFO] GET recipe_name")
+    recipe = get_recipe(recipe_name)
+    items = []
+
+    if recipe:
+        if recipe[1] == -1:
+            # recipe == [url, price, ingredients[STRING]]
+            print("[INFO] update price of recipe")
+            price = 0
+            ingredients = functions.get_recipies_by_url(recipe[0])
+            tmp = ingredients
+            ingredients = functions.make_readable(ingredients)          
+            print("[INFO] scraping ingredients")
+            for ingredient in ingredients:
+                items.append(functions.get_price_of_ingredient(ingredient))
+                price += items[-1][0]
+
+            ingredients = tmp
+            update_price(recipe_name, price, ingredients)
+            print(f'[INFO] price for {recipe_name} updated')
+        else:
+            price = recipe[1]
+            ingredients = recipe[2]
+            print('[INFO] get price from table')
+    else:
+        print('[INFO] WRONG NAME!')
+    return render_template('item.html', recipe_name=recipe_name, price=price, ingredients=ingredients)
 
 
 if __name__ == '__main__':
@@ -156,7 +172,7 @@ if __name__ == '__main__':
             cursor.execute(CREATE_RECIPE_TABLE)
         app.run(host='0.0.0.0', port='8000', debug=True)
     except Exception as ex:
-        print("[INFO] some ex")
+        print("[INFO] some ex", file=sys.stderr)
         print("[ERROR]", ex, file=sys.stderr)
     finally:
         if connection:

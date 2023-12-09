@@ -72,7 +72,11 @@ def get_recipies_by_url(url: str):
     recipe = []
 
     for good in found_goods:
-        recipe.append(good.contents[0])
+        a = good.find('a')
+        if a:
+            recipe.append(a.text.strip())
+        else:
+            recipe.append(good.contents[0])
 
     return recipe
 

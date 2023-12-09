@@ -2,5 +2,14 @@
 
 {% block content%}
 {{ super() }}
-{{ recipe_name }} {{ price }}
+<div class="recipe">
+    <p style="font-size: large;">
+        {{ recipe_name }}  price: {{ price }}
+    </p>
+</div>
+<div class="ingredients">
+    {% for ingredient in ingredients %}
+    <h2 class="ingredient", style="font-size: small;"> {{ ingredient }} </h2>
+    {% endfor %}
+</div>
 {% endblock %}
