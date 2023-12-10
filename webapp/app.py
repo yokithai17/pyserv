@@ -4,7 +4,7 @@ import scrap_functions as functions
 import psycopg2
 
 # config DATA BASE
-host = 'localhost'
+host = 'postgres'
 user = 'postgres'
 password = '2328'
 db_name = 'postgres'
