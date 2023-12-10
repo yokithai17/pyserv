@@ -35,8 +35,8 @@ morph = pymorphy2.MorphAnalyzer()
 
 
 def get_bsObj(url: str):
-    # driver = webdriver.Chrome(options=chrome_options)
-    driver = webdriver.Firefox()
+    driver = webdriver.Chrome(options=chrome_options)
+    # driver = webdriver.Firefox()
     driver.implicitly_wait(10)
     driver.get(url)
     html = driver.execute_script("return document.body.innerHTML")
