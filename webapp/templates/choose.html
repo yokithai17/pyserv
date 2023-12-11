@@ -2,17 +2,14 @@
 
 {% block content%}
 {{ super() }}
-{% for msg in get_flashed_messages() %}
-<div class="flash">{{ msg }}</div>
-{% endfor %}
 <form action="" method="post" class="form-flash">
-    <p><label> choose recipe name</label>
+    <p><label> Выберите название рецепта </label>
         <input type="text" name="recipe_name" value="" required/>
     </p>
 </form>
-<div class="choose">
+<div class="list_of_recipies">
     {% for item in items %}
-    <h2> {{ item }} </h2>
+    <h2> {{ item[1] }} </h2>
     {% endfor %}
 </div>
 {% endblock %}

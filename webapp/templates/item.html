@@ -4,8 +4,10 @@
 {{ super() }}
 <div class="recipe">
     <p style="font-size: large;">
-        {{ recipe_name }}  price: {{ price }}
+        <h1>{{ recipe_name }}  price: {{ price }}</h1>
+        <a href={{url}}>Ссылка на рецепт</a>
     </p>
+
 </div>
 <div class="ingredients">
     {% for ingredient in ingredients %}
