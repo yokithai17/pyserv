@@ -69,7 +69,7 @@ def price(recipe_name):
             for ingredient in ingredients:
                 items.append(functions.get_price_of_ingredient(ingredient))
                 price += items[-1][0]
-                tmp.append('{}, цена: {}'.format(items[-1][1], items[-1][0]))
+                tmp.append(items[-1])
                 db_t.insert_igredients(recipe_name, items[-1])
             
             ingredients = tmp
@@ -77,9 +77,7 @@ def price(recipe_name):
             print(f'[INFO] price for {recipe_name} updated')
         else:
             price = recipe[1]
-            items = db_t.get_ingredients(recipe_name)
-            for item in items:
-                ingredients.append('{}, цена: {}'.format(item[0], item[1]))
+            ingredients = db_t.get_ingredients(recipe_name)
             print('[INFO] get price from table')
     else:
         print('[INFO] WRONG NAME!')

@@ -4,14 +4,15 @@
 {{ super() }}
 <div class="recipe">
     <p style="font-size: large;">
-        <h1>{{ recipe_name }}  price: {{ price }}</h1>
+        <h1> Название: {{ recipe_name }}</h1>  
+        <h1> Цена: {{ price }}</h1>
         <a href={{url}}>Ссылка на рецепт</a>
     </p>
 
 </div>
 <div class="ingredients">
     {% for ingredient in ingredients %}
-    <h2 class="ingredient", style="font-size: small;"> {{ ingredient }} </h2>
+    <h2 class="ingredient", style="font-size: small;"> {{ ingredient[0] }} Цена: {{ ingredient[1] }} </h2>
     {% endfor %}
 </div>
 {% endblock %}

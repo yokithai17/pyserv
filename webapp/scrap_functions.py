@@ -99,8 +99,8 @@ def get_price_of_ingredient(ingredient: str) -> tuple[float, str]:
                 min_price = float(price)
                 min_title = title
         # print(title, price)
-    print(f"[INFO] {ingredient} --->", (min_price, min_title))
-    return (min_price, min_title)
+    print(f"[INFO] {ingredient} --->", (min_title, min_price))
+    return (min_title, min_price)
 
 
 def make_readable(recipe: list[str]):
