@@ -81,7 +81,7 @@ def get_recipies_by_url(url: str):
     return recipe
 
 
-def get_price_of_ingredient(ingredient: str) -> tuple[int, str]:
+def get_price_of_ingredient(ingredient: str) -> tuple[float, str]:
     bsObj = get_bsObj(items_site_search.format(ingredient))
     print("[INFO] get html from items_site")
     found_goods = bsObj.find_all('div', {'class': 'product-card__content'})
@@ -95,8 +95,8 @@ def get_price_of_ingredient(ingredient: str) -> tuple[int, str]:
             title = title.text.strip()
         if price:
             price = price.text.replace('\xa0', '')
-            if min_price > int(price):
-                min_price = int(price)
+            if min_price > float(price):
+                min_price = float(price)
                 min_title = title
         # print(title, price)
     print(f"[INFO] {ingredient} --->", (min_price, min_title))

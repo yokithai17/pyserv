@@ -35,10 +35,6 @@ def choose():
         if request_id is None:
             request_id = db_t.insert_request_recipe(request_name)
             items = functions.get_recipe_by_request(request_name)
-            if items is None:
-                print('[INFO] 0 found recipies')
-                return redirect(url_for('404.html'))
-            
             print('[INFO] insert recipies into table')
             db_t.insert_recipies(request_id, items)
 
@@ -62,12 +58,11 @@ def price(recipe_name):
         url = functions.recipe_site + recipe[0]
 
         if recipe[1] == -1:
-            tmp = []
             # recipe == [url, price, ingredients[STRING]]
             print("[INFO] update price of recipe")
             price = 0
             ingredients = functions.get_recipies_by_url(recipe[0])
-            tmp = ingredients
+            tmp = []
             ingredients = functions.make_readable(ingredients)          
             print("[INFO] scraping ingredients")
 
